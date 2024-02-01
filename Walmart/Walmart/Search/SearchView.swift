@@ -16,9 +16,96 @@ struct SearchView: View {
             SearchToolbarView
                 .frame(height: 100)
             Spacer()
+            
+            VStack {
+                switch vm.loadingState {
+                    case .idle:
+                        ContentUnavailableView.search
+                    case .loading:
+                        ProgressView()
+                    case .success(let productList):
+                        SearchProductListView(productList)
+                    case .error(let err):
+                        ContentUnavailableView("Error",
+                                               systemImage: "exclamationmark.triangle",
+                                               description: Text(err))
+                }
+            }
+        }
+        .task {
+            // TODO: Change this task!!!
+            // vm.get_products()
+            // TODO: Delete this test data.
+            vm.loadingState = .success(products: ProductList(products: [
+                    Product(id: 1,
+                            title: "iPhone 9",
+                            description:"An apple mobile which is nothing like apple",
+                            price:549,
+                            discountPercentage:12.96,
+                            rating:4.69,
+                            stock:94,
+                            brand:"Apple",
+                            category:"smartphones",
+                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
+                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
+                            ),
+                    Product(id: 1,
+                            title: "iPhone 9",
+                            description:"An apple mobile which is nothing like apple",
+                            price:549,
+                            discountPercentage:12.96,
+                            rating:4.69,
+                            stock:94,
+                            brand:"Apple",
+                            category:"smartphones",
+                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
+                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
+                            ),
+                    Product(id: 1,
+                            title: "iPhone 9",
+                            description:"An apple mobile which is nothing like apple",
+                            price:549,
+                            discountPercentage:12.96,
+                            rating:4.69,
+                            stock:94,
+                            brand:"Apple",
+                            category:"smartphones",
+                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
+                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
+                            ),
+                    Product(id: 1,
+                            title: "iPhone 9",
+                            description:"An apple mobile which is nothing like apple",
+                            price:549,
+                            discountPercentage:12.96,
+                            rating:4.69,
+                            stock:94,
+                            brand:"Apple",
+                            category:"smartphones",
+                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
+                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
+                            ),
+                    Product(id: 1,
+                            title: "iPhone 9",
+                            description:"An apple mobile which is nothing like apple",
+                            price:549,
+                            discountPercentage:12.96,
+                            rating:4.69,
+                            stock:94,
+                            brand:"Apple",
+                            category:"smartphones",
+                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
+                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
+                            ),
+                ],
+                total: 5,
+                skip: 0,
+                limit: 5))
         }
     }
-    
+   
+    // MARK: Toolbar for the top of the screen with the search bar.
+
     @ViewBuilder
     private var SearchToolbarView: some View {
         VStack {
@@ -31,7 +118,7 @@ struct SearchView: View {
                         Button {} label: {
                             Image(systemName: "chevron.left")
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(colorScheme == .dark ? .black : .white)
                         .font(.largeTitle)
                         .padding(.leading)
                         
@@ -52,7 +139,7 @@ struct SearchView: View {
                             .padding(.horizontal, 5)
                         }
                         .padding(.horizontal, 2)
-                        .frame(height: 40)
+                        .frame(height: 35)
                         .background()
                         .clipShape(Capsule())
                         .padding(.horizontal)
@@ -115,6 +202,13 @@ struct SearchView: View {
                 }
             }
             Spacer()
+        }
+    }
+    
+    @ViewBuilder
+    private func SearchProductListView(_ productList: ProductList) -> some View {
+        ForEach(productList.products) { product in
+            Text(product.title)
         }
     }
 }
