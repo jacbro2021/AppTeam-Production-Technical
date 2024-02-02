@@ -10,7 +10,7 @@ import Foundation
 enum SearchState {
     case idle
     case loading
-    case success(products: ProductList)
+    case success(products: ProductList, specific_search: Bool)
     case error(err: String)
 }
 
@@ -26,7 +26,7 @@ class SearchViewModel: ObservableObject {
         
         Task {
             do {
-                loadingState = .success(products: try await service.fetch_all_products())
+                loadingState = .success(products: try await service.fetch_all_products(), specific_search: false)
             } catch {
                 print(error)
                 loadingState = .error(err: error.localizedDescription)
@@ -39,7 +39,7 @@ class SearchViewModel: ObservableObject {
         
         Task {
             do {
-                loadingState = .success(products: try await service.fetch_all_products())
+                loadingState = .success(products: try await service.search_products(searchText), specific_search: true)
             } catch {
                 loadingState = .error(err: error.localizedDescription)
             }

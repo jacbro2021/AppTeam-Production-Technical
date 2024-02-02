@@ -23,3 +23,20 @@ struct Product: Codable, Identifiable {
     let thumbnail: String
     let images: [String]
 }
+
+struct CommentList: Codable {
+    let comments: [Comment]
+    let total, skip, limit: Int
+}
+
+struct Comment: Codable, Identifiable {
+    let id: Int
+    let body: String
+    let postId: Int
+    let user: User
+}
+
+struct User: Codable {
+    let id: Int
+    let username: String
+}

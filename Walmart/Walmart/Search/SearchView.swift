@@ -10,100 +10,41 @@ import SwiftUI
 struct SearchView: View {
     @StateObject private var vm = SearchViewModel()
     @Environment(\.colorScheme) var colorScheme
+    @State var showingSheet = false
     
     var body: some View {
         NavigationStack {
             SearchToolbarView
                 .frame(height: 100)
-            Spacer()
             
             VStack {
                 switch vm.loadingState {
-                    case .idle:
-                        ContentUnavailableView.search
-                    case .loading:
+                case .idle:
+                    ContentUnavailableView.search
+                case .loading:
+                    VStack {
+                        Spacer()
                         ProgressView()
-                    case .success(let productList):
-                        SearchProductListView(productList)
-                    case .error(let err):
-                        ContentUnavailableView("Error",
-                                               systemImage: "exclamationmark.triangle",
-                                               description: Text(err))
+                        Spacer()
+                    }
+                    Spacer()
+                case .success(let productList, let specific_search):
+                    SearchProductListView(productList, specific_search: specific_search)
+                case .error(let err):
+                    ContentUnavailableView("Error",
+                                           systemImage: "exclamationmark.triangle",
+                                           description: Text(err))
                 }
             }
         }
         .task {
             // TODO: Change this task!!!
-            // vm.get_products()
+            vm.get_products()
             // TODO: Delete this test data.
-            vm.loadingState = .success(products: ProductList(products: [
-                    Product(id: 1,
-                            title: "iPhone 9",
-                            description:"An apple mobile which is nothing like apple",
-                            price:549,
-                            discountPercentage:12.96,
-                            rating:4.69,
-                            stock:94,
-                            brand:"Apple",
-                            category:"smartphones",
-                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
-                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
-                            ),
-                    Product(id: 1,
-                            title: "iPhone 9",
-                            description:"An apple mobile which is nothing like apple",
-                            price:549,
-                            discountPercentage:12.96,
-                            rating:4.69,
-                            stock:94,
-                            brand:"Apple",
-                            category:"smartphones",
-                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
-                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
-                            ),
-                    Product(id: 1,
-                            title: "iPhone 9",
-                            description:"An apple mobile which is nothing like apple",
-                            price:549,
-                            discountPercentage:12.96,
-                            rating:4.69,
-                            stock:94,
-                            brand:"Apple",
-                            category:"smartphones",
-                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
-                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
-                            ),
-                    Product(id: 1,
-                            title: "iPhone 9",
-                            description:"An apple mobile which is nothing like apple",
-                            price:549,
-                            discountPercentage:12.96,
-                            rating:4.69,
-                            stock:94,
-                            brand:"Apple",
-                            category:"smartphones",
-                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
-                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
-                            ),
-                    Product(id: 1,
-                            title: "iPhone 9",
-                            description:"An apple mobile which is nothing like apple",
-                            price:549,
-                            discountPercentage:12.96,
-                            rating:4.69,
-                            stock:94,
-                            brand:"Apple",
-                            category:"smartphones",
-                            thumbnail:"https://cdn.dummyjson.com/product-images/1/thumbnail.jpg",
-                            images:["https://cdn.dummyjson.com/product-images/1/1.jpg","https://cdn.dummyjson.com/product-images/1/2.jpg","https://cdn.dummyjson.com/product-images/1/3.jpg","https://cdn.dummyjson.com/product-images/1/4.jpg","https://cdn.dummyjson.com/product-images/1/thumbnail.jpg"]
-                            ),
-                ],
-                total: 5,
-                skip: 0,
-                limit: 5))
+            
         }
     }
-   
+    
     // MARK: Toolbar for the top of the screen with the search bar.
 
     @ViewBuilder
@@ -115,7 +56,10 @@ struct SearchView: View {
                 
                 VStack {
                     HStack {
-                        Button {} label: {
+                        Button {
+                            vm.searchText = ""
+                            vm.get_products()
+                        } label: {
                             Image(systemName: "chevron.left")
                         }
                         .foregroundStyle(colorScheme == .dark ? .black : .white)
@@ -128,6 +72,9 @@ struct SearchView: View {
                                 .padding(.leading)
                             
                             TextField("Search Walmart", text: $vm.searchText)
+                                .onSubmit {
+                                    vm.search_products()
+                                }
                             
                             Spacer()
                             
@@ -201,14 +148,50 @@ struct SearchView: View {
                     }
                 }
             }
-            Spacer()
         }
     }
     
     @ViewBuilder
-    private func SearchProductListView(_ productList: ProductList) -> some View {
-        ForEach(productList.products) { product in
-            Text(product.title)
+    private func SearchProductListView(_ productList: ProductList, specific_search: Bool = false) -> some View {
+        VStack(alignment: .leading) {
+            ScrollView {
+                if specific_search {
+                    HStack {
+                        Text("Results for \"\(vm.searchText)\"")
+                            .bold()
+                            .font(.title2)
+                    
+                        Text("(\(productList.total))")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                }
+            
+                HStack {
+                    Text("Price when purchased online")
+                        .font(.callout)
+                        .padding(.leading)
+                
+                    Button {} label: {
+                        Image(systemName: "info.circle")
+                    }
+                    .foregroundStyle(.primary)
+                    
+                    Spacer()
+                }
+            
+                ForEach(productList.products) { product in
+                    NavigationLink {
+                        ProductDetailView(vm: ProductDetailViewModel(product: product))
+                    } label: {
+                        ProductView(product: product)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
     }
 }

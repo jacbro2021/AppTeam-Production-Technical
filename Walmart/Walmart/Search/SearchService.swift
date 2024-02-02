@@ -14,7 +14,7 @@ class SearchService {
     private var decoder = JSONDecoder()
     
     func fetch_all_products() async throws -> ProductList {
-         guard let components = URLComponents(string: "https://dummyjson.com/products") else {
+         guard var components = URLComponents(string: "https://dummyjson.com/products") else {
             /*
              This error could be handled better, however if something
              goes wrong here it is likely my fault, so I am just
@@ -22,6 +22,10 @@ class SearchService {
             */
             fatalError("Failed to create url components.")
         }
+        
+        components.queryItems = [
+            URLQueryItem(name: "limit", value: "0")
+        ]
         
         guard let url = components.url else {
             // Same reasoning for fatal error usage as above
@@ -61,5 +65,24 @@ class SearchService {
         let productList = try decoder.decode(ProductList.self, from: data)
         
         return productList
+    }
+    
+    func fetch_comments() async throws -> CommentList {
+        guard let components = URLComponents(string: "https://dummyjson.com/comments") else {
+            // Using fatal error for the same reason described in above comments.
+            fatalError("Failed to create URL components.")
+        }
+        
+        guard let url = components.url else {
+            // Using fatal error for the same reason described in above comments.
+            fatalError("Failed to create url.")
+        }
+        
+        let request = URLRequest(url: url)
+        
+        let (data, _) = try await session.data(for: request)
+        let commentList = try decoder.decode(CommentList.self, from: data)
+        
+        return commentList
     }
 }
