@@ -151,6 +151,8 @@ struct SearchView: View {
         }
     }
     
+    // MARK: List products returned from API.
+    
     @ViewBuilder
     private func SearchProductListView(_ productList: ProductList, specific_search: Bool = false) -> some View {
         VStack(alignment: .leading) {
